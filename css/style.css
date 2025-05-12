@@ -6,11 +6,15 @@ body {
     background-color: #f4f4f4;
 }
 
+body.modal-open {
+    overflow: hidden; /* Блокує прокручування */
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    text-align: center;
+    text-align: left; /* Зміщення таблиці лівіше */
 }
 
 #fileSelector {
@@ -40,7 +44,7 @@ h1 {
 .viewer {
     display: flex;
     gap: 20px;
-    justify-content: space-between;
+    justify-content: flex-start; /* Зміщення вліво */
 }
 
 .column {
@@ -77,8 +81,23 @@ h1 {
     background: #0056b3;
 }
 
+.column ul li.active {
+    background: #003d80; /* Темніший колір для вибраного року */
+    color: #fff;
+    font-weight: bold;
+    border: 2px solid #0056b3; /* Додаємо рамку для виділення */
+    cursor: pointer;
+}
+
+#selectionDisplay {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
 .gallery {
-    flex: 2;
+    flex: 3; /* Збільшення ширини галереї */
     background: #fff;
     padding: 10px;
     border-radius: 5px;
@@ -86,14 +105,20 @@ h1 {
 }
 
 #gallery {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 фото в ряд */
     gap: 10px;
     margin-top: 20px;
+    max-height: 500px; /* Обмеження висоти галереї */
+    overflow-y: auto; /* Вертикальний скрол */
+    padding-right: 10px; /* Додаємо відступ для скролбару */
+    border: 1px solid #ddd; /* Додаємо рамку для візуального відокремлення */
+    background-color: #fff; /* Фон галереї */
+    border-radius: 5px; /* Закруглені кути */
 }
 
 .gallery-image {
-    width: 200px;
+    width: 100%;
     height: auto;
     border: 2px solid #ddd;
     border-radius: 5px;
@@ -101,7 +126,7 @@ h1 {
 }
 
 .gallery-image:hover {
-    transform: scale(1.1);
+    transform: scale(1.3);
     border-color: #007bff;
 }
 
@@ -116,4 +141,114 @@ h1 {
     height: auto;
     border-radius: 5px;
     cursor: pointer;
+}
+
+.modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.modal-content {
+    max-width: 80%; /* Зменшуємо ширину, щоб залишити місце для мініатюр */
+    max-height: 90%;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+}
+
+.modal-content:hover {
+    transform: scale(1.05);
+}
+
+.close {
+    position: absolute;
+    top: 20px;
+    right: 150px; /* Замість right зміщуємо вліво */
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.prev,
+.next {
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    width: 100px;
+    height: 100%; /* Займає всю висоту */
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-weight: bold;
+    font-size: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: background-color 0.3s;
+}
+
+.prev {
+    left: 0;
+}
+
+.next {
+    right: 0;
+}
+
+.prev:hover,
+.next:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.thumbnail-row {
+    display: flex;
+    flex-direction: column; /* Розташування мініатюр вертикально */
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0; /* Забираємо великий відступ зверху */
+    overflow-y: auto; /* Вертикальний скрол */
+    max-height: 98%; /* Збільшуємо висоту стрічки */
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 5px;
+    position: absolute; /* Фіксуємо позицію */
+    left: 98px; /* Відступ від лівого краю */
+    top: 50%; /* Центруємо по вертикалі */
+    transform: translateY(-50%); /* Вирівнюємо по центру */
+}
+
+.thumbnail-row img {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.thumbnail-row img:hover {
+    transform: scale(1.1);
+}
+
+.thumbnail-row img.active {
+    border-color: #007bff; /* Підсвічування активного фото */
 }
