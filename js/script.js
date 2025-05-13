@@ -15,9 +15,7 @@ async function fetchData() {
 }
 
 // Зміна файлу через випадаючий список
-function changeFile(event) {
-    currentFile = event.target.value; // Отримуємо вибраний файл
-
+function changeFile() {
     // Очищення стовпчиків
     document.getElementById('brands').innerHTML = ''; // Очищення списку брендів
     document.getElementById('models').innerHTML = ''; // Очищення списку моделей
@@ -40,17 +38,21 @@ function populateBrands() {
     brands.forEach(brand => {
         const li = document.createElement('li');
         li.textContent = brand;
-        li.addEventListener('click', () => handleBrandSelection(brand));
+        li.addEventListener('click', (event) => handleBrandSelection(brand, event));
         brandsList.appendChild(li);
     });
 }
 
 // Оновлена функція для вибору бренду
-function handleBrandSelection(selectedBrand) {
+function handleBrandSelection(selectedBrand, event) {
+    // Знімаємо активний клас з усіх брендів
     const brandsList = document.getElementById('brands');
-    Array.from(brandsList.children).forEach((li) => li.classList.remove('active')); // Знімаємо активний клас
-    event.target.classList.add('active'); // Додаємо активний клас до вибраного елемента
+    Array.from(brandsList.children).forEach((li) => li.classList.remove('active'));
 
+    // Додаємо активний клас до вибраного бренду
+    event.target.classList.add('active');
+
+    // Отримуємо моделі для вибраного бренду
     const models = new Set();
     Object.keys(data).forEach((key) => {
         const [brand, model] = key.split('/');
@@ -59,27 +61,34 @@ function handleBrandSelection(selectedBrand) {
         }
     });
 
+    // Заповнюємо список моделей
     const modelsList = document.getElementById('models');
     modelsList.innerHTML = '';
     models.forEach((model) => {
         const li = document.createElement('li');
         li.textContent = model;
-        li.addEventListener('click', () => handleModelSelection(selectedBrand, model));
+        li.addEventListener('click', (event) => handleModelSelection(selectedBrand, model, event));
         modelsList.appendChild(li);
     });
 
-    document.getElementById('years').innerHTML = ''; // Очищення списку років
-    document.getElementById('gallery').innerHTML = ''; // Очищення галереї
+    // Очищаємо роки та галерею
+    document.getElementById('years').innerHTML = '';
+    document.getElementById('gallery').innerHTML = '';
 
-    updateSelectionDisplay(selectedBrand, null, null); // Оновлення тексту вибору
+    // Оновлюємо текст вибору
+    updateSelectionDisplay(selectedBrand, null, null);
 }
 
 // Оновлена функція для вибору моделі
-function handleModelSelection(selectedBrand, selectedModel) {
+function handleModelSelection(selectedBrand, selectedModel, event) {
+    // Знімаємо активний клас з усіх моделей
     const modelsList = document.getElementById('models');
-    Array.from(modelsList.children).forEach((li) => li.classList.remove('active')); // Знімаємо активний клас
-    event.target.classList.add('active'); // Додаємо активний клас до вибраного елемента
+    Array.from(modelsList.children).forEach((li) => li.classList.remove('active'));
 
+    // Додаємо активний клас до вибраної моделі
+    event.target.classList.add('active');
+
+    // Отримуємо роки для вибраного бренду та моделі
     const years = new Set();
     Object.keys(data).forEach((key) => {
         const [brand, model, year] = key.split('/');
@@ -88,27 +97,34 @@ function handleModelSelection(selectedBrand, selectedModel) {
         }
     });
 
-    const yearsList = document.getElementById('years');
-    yearsList.innerHTML = '';
-    years.forEach((year) => {
-        const li = document.createElement('li');
-        li.textContent = year;
-        li.addEventListener('click', () => handleYearSelection(selectedBrand, selectedModel, year));
-        yearsList.appendChild(li);
-    });
+    // Заповнюємо список років
+    populateYears(selectedBrand, selectedModel, Array.from(years).sort());
 
-    document.getElementById('gallery').innerHTML = ''; // Очищення галереї
+    // Очищаємо галерею
+    document.getElementById('gallery').innerHTML = '';
 
-    updateSelectionDisplay(selectedBrand, selectedModel, null); // Оновлення тексту вибору
+    // Оновлюємо текст вибору
+    updateSelectionDisplay(selectedBrand, selectedModel, null);
 }
 
 // Оновлена функція для вибору року
-function handleYearSelection(selectedBrand, selectedModel, selectedYear) {
+function handleYearSelection(selectedBrand, selectedModel, selectedYear, event) {
+    // Знімаємо активний клас з усіх років
     const yearsList = document.getElementById('years');
-    Array.from(yearsList.children).forEach((li) => li.classList.remove('active')); // Знімаємо активний клас
-    event.target.classList.add('active'); // Додаємо активний клас до вибраного елемента
+    Array.from(yearsList.children).forEach((li) => li.classList.remove('active'));
 
-    currentImages = []; // Очищення списку зображень
+    // Додаємо активний клас до вибраного року
+    event.target.classList.add('active');
+
+    // Оновлюємо текст вибору
+    updateSelectionDisplay(selectedBrand, selectedModel, selectedYear);
+
+    // Очищаємо галерею
+    const gallery = document.getElementById('gallery');
+    gallery.innerHTML = '';
+
+    // Додаємо зображення до галереї
+    currentImages = [];
     Object.entries(data).forEach(([key, url]) => {
         const [brand, model, year] = key.split('/');
         if (brand === selectedBrand && model === selectedModel && year === selectedYear) {
@@ -116,17 +132,16 @@ function handleYearSelection(selectedBrand, selectedModel, selectedYear) {
         }
     });
 
-    const gallery = document.getElementById('gallery');
-    gallery.innerHTML = '';
     currentImages.forEach((src) => {
         const img = document.createElement('img');
         img.src = src;
         img.alt = 'Car Image';
         img.classList.add('gallery-image');
+        img.addEventListener('click', () => openModal(src));
         gallery.appendChild(img);
     });
 
-    updateSelectionDisplay(selectedBrand, selectedModel, selectedYear); // Оновлення тексту вибору
+    cleanGallery();
 }
 
 // Очищення основної галереї від фото 1x1 і тих, що не завантажилися
@@ -145,34 +160,6 @@ function cleanGallery() {
             }
         });
     });
-}
-
-// Оновлена функція для завантаження галереї
-function handleYearSelection(selectedBrand, selectedModel, selectedYear) {
-    currentImages = []; // Очищення списку зображень
-    Object.entries(data).forEach(([key, url]) => {
-        const [brand, model, year] = key.split('/');
-        if (brand === selectedBrand && model === selectedModel && year === selectedYear) {
-            currentImages.push(url);
-        }
-    });
-
-    const gallery = document.getElementById('gallery');
-    gallery.innerHTML = '';
-    currentImages.forEach((src) => {
-        const img = document.createElement('img');
-        img.src = src;
-        img.alt = 'Car Image';
-        img.classList.add('gallery-image');
-
-        // Додавання обробника для відкриття модального вікна
-        img.addEventListener('click', () => openModal(src));
-
-        gallery.appendChild(img);
-    });
-
-    // Очищення галереї від фото 1x1 і тих, що не завантажилися
-    cleanGallery();
 }
 
 // Оновлена функція для створення модальної галереї
@@ -195,17 +182,28 @@ function createModalGallery() {
         // Додавання обробника для вибору фото
         thumbnail.addEventListener('click', () => {
             modalImage.src = img.src;
-
-            // Оновлення підсвічування активного фото
-            document.querySelectorAll('.thumbnail-row img').forEach((thumb) => thumb.classList.remove('active'));
-            thumbnail.classList.add('active');
+            currentImageIndex = index; // Оновлюємо індекс
+            updateThumbnails();
         });
 
         thumbnailRow.appendChild(thumbnail);
     });
 
+    // Підсвічуємо початкову мініатюру
+    updateThumbnails();
+
     // Відкриття модального вікна
     modal.style.display = 'flex';
+}
+
+function updateThumbnails() {
+    const thumbnails = document.querySelectorAll('.thumbnail-row img');
+    thumbnails.forEach((thumb, index) => {
+        thumb.classList.remove('active');
+        if (index === currentImageIndex) {
+            thumb.classList.add('active');
+        }
+    });
 }
 
 // Оновлена функція для відкриття модального вікна
@@ -224,15 +222,15 @@ function openModal(src) {
 function changeImage(direction) {
     currentImageIndex += direction;
     if (currentImageIndex < 0) {
-        currentImageIndex = currentImages.length - 1; // Переходить до останнього фото
+        currentImageIndex = currentImages.length - 1;
     } else if (currentImageIndex >= currentImages.length) {
-        currentImageIndex = 0; // Повертається до першого фото
+        currentImageIndex = 0;
     }
     const modalImage = document.getElementById('modalImage');
     modalImage.src = currentImages[currentImageIndex];
 
-    // Оновлення підсвічування
-    createThumbnailRow();
+    // Оновлення підсвічування мініатюр
+    updateThumbnails();
 }
 
 // Оновлена функція для закриття модального вікна
@@ -281,30 +279,32 @@ window.addEventListener('click', (event) => {
 
 // Ініціалізація
 document.addEventListener('DOMContentLoaded', () => {
-    fetchData();
+    // ... (інший код)
 
-    // Додаємо випадаючий список для вибору файлу
-    const fileSelector = document.createElement('select');
-    fileSelector.id = 'fileSelector';
+    // Замінюємо випадаючий список кнопками
+    const fileSelectorContainer = document.getElementById('fileSelectorContainer');
+    const buttons = fileSelectorContainer.querySelectorAll('button');
 
-    // Додаємо опції до випадаючого списку
-    const files = [
-        { name: 'Sample JSON', value: 'js/sample.json' },
-        { name: 'Image Sources JSON', value: 'js/image_sources.json' }
-    ];
-
-    files.forEach(file => {
-        const option = document.createElement('option');
-        option.value = file.value;
-        option.textContent = file.name;
-        fileSelector.appendChild(option);
+    // Встановлюємо "Sample JSON" як активний при завантаженні
+    buttons.forEach(button => {
+        if (button.dataset.file === 'js/sample.json') {
+            button.classList.add('active');
+            currentFile = button.dataset.file;
+        }
     });
 
-    // Додаємо обробник подій для зміни файлу
-    fileSelector.addEventListener('change', changeFile);
+    fileSelectorContainer.addEventListener('click', (event) => {
+        if (event.target.tagName === 'BUTTON') {
+            currentFile = event.target.dataset.file;
+            changeFile(); // Викликаємо функцію зміни файлу
 
-    // Додаємо випадаючий список до сторінки
-    document.body.insertBefore(fileSelector, document.body.firstChild);
+            // Додаємо активний клас до вибраної кнопки
+            buttons.forEach(button => button.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+    });
+
+    fetchData(); // Завантажуємо дані при завантаженні сторінки
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -328,13 +328,29 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Додаємо елемент для відображення вибору
-const selectionDisplay = document.createElement('div');
-selectionDisplay.id = 'selectionDisplay';
-document.body.insertBefore(selectionDisplay, document.body.firstChild);
-
-// Оновлення тексту вибору
 function updateSelectionDisplay(brand, model, year) {
-    const displayText = `${brand || ''} ${model || ''} ${year || ''}`.trim(); // Додаємо пробіли між назвами
-    selectionDisplay.textContent = `Вибрано: ${displayText}`;
+    const selectionDisplay = document.getElementById('selectionDisplay');
+    if (brand && model && year) {
+        selectionDisplay.textContent = `${brand} ${model} ${year}`;
+    } else if (brand && model) {
+        selectionDisplay.textContent = `${brand} ${model}`;
+    } else if (brand) {
+        selectionDisplay.textContent = `${brand}`;
+    } else {
+        selectionDisplay.textContent = 'No selection';
+    }
+}
+
+function populateYears(selectedBrand, selectedModel, years) {
+    const yearsList = document.getElementById('years');
+    yearsList.innerHTML = ''; // Очищення списку років
+
+    years.forEach((year, index) => {
+        const li = document.createElement('li');
+        li.textContent = year;
+        li.id = `year-${index}`; // Додаємо унікальний id
+        li.classList.add('year-button'); // Додаємо клас для стилізації
+        li.addEventListener('click', (event) => handleYearSelection(selectedBrand, selectedModel, year, event));
+        yearsList.appendChild(li);
+    });
 }

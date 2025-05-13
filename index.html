@@ -9,7 +9,16 @@
 </head>
 <body>
     <div class="container">
-        <h1>Car Models Viewer</h1>
+        <div class="header-container">
+            <h1>Car Models Viewer</h1>
+            <div id="selectionDisplay">No selection</div>
+            <div id="fileSelectorContainer" class="file-selector-container">
+                <button data-file="js/sample.json">Sample JSON</button>
+                <span>/</span>
+                <button data-file="js/image_sources.json">Image Sources JSON</button>
+            </div>
+        </div>
+
         <div class="viewer">
             <div class="column">
                 <h2>Brands</h2>
